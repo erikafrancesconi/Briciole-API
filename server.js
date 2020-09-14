@@ -27,7 +27,7 @@ app.post('/register', (req, res) => {
     res.status(400).json('Something went wrong');
   }
 
-  res.json('OK');
+  res.json({result: 'OK', id: 123, name: 'Erika'});
 });
 
 app.post('/signin', (req, res) => {
