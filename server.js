@@ -9,27 +9,6 @@ app.use(cors());
 
 let lastPwd = ''; // TODO: remove this shit
 
-app.post('/signin', (req, res) => {
-  const { email, password } = req.body;
-  console.log(email);
-  console.log(password);
-
-  bcrypt.compare(password, lastPwd, (err, res) => {
-    if (res) {
-      console.log('Password matches');
-    }
-    else {
-      console.log('Wrong password');
-    }
-  });
-
-  if (false) {
-    res.status(400).json({result: 'Wrong Credentials'});
-  }
-
-  res.json({result: 'OK', id: 123, name: 'Erika'});
-});
-
 app.post('/register', (req, res) => {
   const { name, email, password} = req.body;
   console.log(name);
@@ -49,6 +28,27 @@ app.post('/register', (req, res) => {
   }
 
   res.json('OK');
+});
+
+app.post('/signin', (req, res) => {
+  const { email, password } = req.body;
+  console.log(email);
+  console.log(password);
+
+  bcrypt.compare(password, lastPwd, (err, res) => {
+    if (res) {
+      console.log('Password matches');
+    }
+    else {
+      console.log('Wrong password');
+    }
+  });
+
+  if (false) {
+    res.status(400).json({result: 'Wrong Credentials'});
+  }
+
+  res.json({result: 'OK', id: 123, name: 'Erika'});
 });
 
 app.post('/signout', (req, res) => {
