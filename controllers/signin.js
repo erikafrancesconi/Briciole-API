@@ -2,6 +2,10 @@ const bcrypt = require('bcryptjs');
 
 const handleSignIn = (pool) => (req, res) => {
   const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.json({result: 'Wrong Credentials.'});
+  }
   
   let text = 'SELECT U.id, fullname, hash FROM users U INNER JOIN login L ON U.email=L.email WHERE U.email = $1';
   pool.query(text, [email])

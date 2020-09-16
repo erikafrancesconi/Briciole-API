@@ -1,19 +1,29 @@
 const bcrypt = require('bcryptjs');
 
+const emailIsValid = email => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 const handleRegister = (pool) => (req, res) => {
   const { name, email, password} = req.body;
+
+  if (!name || !email || !password) {
+    return res.json({result: 'Please fill all fields.'});
+  }
+
+  if (!emailIsValid(email)) {
+    return res.json({result: 'Invalid Email.'});
+  }
 
   pool.connect()
   .then(client => {
     const abort = err => {
-      if (err) {
-        console.error('Error in transaction', err.stack);
-        client.query('ROLLBACK', err => {
-          if (err) {
-            console.error('Error rolling back client', err.stack);
-          }
-        })
-      }
+      console.error('Error in transaction', err.stack);
+      client.query('ROLLBACK', err => {
+        if (err) {
+          console.error('Error rolling back client', err.stack);
+        }
+      });
     }
 
     client.query('BEGIN')
@@ -31,29 +41,29 @@ const handleRegister = (pool) => (req, res) => {
             .then(() => {
               client.query('COMMIT')
               .then(() => {
-                res.json({result: 'OK'});
+                return res.json({result: 'OK'});
               })
               .catch(err => {
                 console.error('Error committing transaction', err.stack);
-                res.json({result: 'Unable to register.'});
+                return res.json({result: 'Unable to register.'});
               });
             })
             .catch(err => {
               abort(err)
-              res.json({result: 'Unable to register.'});
+              return res.json({result: 'Unable to register.'});
             })
           });
         });
       })
       .catch((err) => {
         abort(err);
-        res.json({result: 'Unable to register.'});
+        return res.json({result: 'Unable to register.'});
       })
     })
   })
   .catch(err => {
     console.log('Unable to connect', err.stack);
-    res.json({result: 'Unable to register.'});
+    return res.json({result: 'Unable to register.'});
   })
 }
 
