@@ -1,4 +1,6 @@
 if (process.env.NODE_ENV !== 'production') {
+  // Per leggere il file .env
+  // In produzione andrà sostituito con le variabili di ambiente
   require('dotenv').config();
 }
 

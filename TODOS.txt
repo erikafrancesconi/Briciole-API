@@ -3,3 +3,5 @@ https://itnext.io/building-restful-api-with-node-js-express-js-and-postgresql-th
 
 Convert Promises to async/await which is more clean
 https://kb.objectrocket.com/postgresql/nodejs-and-the-postgres-transaction-968
+
+Gestire in qualche modo le query multilinea
