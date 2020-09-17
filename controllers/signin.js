@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
+const db = require('../db');
 
-const handleSignIn = (pool) => (req, res) => {
+const handleSignIn = (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -8,7 +9,7 @@ const handleSignIn = (pool) => (req, res) => {
   }
   
   let text = 'SELECT U.id, fullname, hash FROM users U INNER JOIN login L ON U.email=L.email WHERE U.email = $1';
-  pool.query(text, [email])
+  db.query(text, [email])
   .then(resp => {
     if (resp.rowCount === 1) {
       const { hash, id, fullname } = resp.rows[0];
@@ -26,7 +27,7 @@ const handleSignIn = (pool) => (req, res) => {
   })
   .catch(() => {
     res.json({result: 'Wrong Credentials'});
-  })
+  });
 };
 
 module.exports = {

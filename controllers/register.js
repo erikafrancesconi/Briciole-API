@@ -1,10 +1,11 @@
 const bcrypt = require('bcryptjs');
+const db = require('../db');
 
 const emailIsValid = email => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-const handleRegister = (pool) => (req, res) => {
+const handleRegister = (req, res) => {
   const { name, email, password} = req.body;
 
   if (!name || !email || !password) {
@@ -15,7 +16,7 @@ const handleRegister = (pool) => (req, res) => {
     return res.json({result: 'Invalid Email.'});
   }
 
-  pool.connect()
+  db.connect()
   .then(client => {
     const abort = err => {
       console.error('Error in transaction', err.stack);
@@ -59,6 +60,9 @@ const handleRegister = (pool) => (req, res) => {
         abort(err);
         return res.json({result: 'Unable to register.'});
       })
+    })
+    .finally(() => {
+      client.release();
     })
   })
   .catch(err => {
