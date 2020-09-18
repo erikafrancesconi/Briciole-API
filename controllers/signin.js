@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const db = require('../db');
 
-const handleSignIn = (req, res) => {
+const handleSignIn = async function(req, res) {
   const error = () => {
     return res.json({result: 'Wrong Credentials.'});
   }
@@ -11,30 +11,37 @@ const handleSignIn = (req, res) => {
   if (!email || !password) {
     return error();
   }
-  
-  let text = 'SELECT U.id, fullname, hash FROM users U INNER JOIN login L ON U.email=L.email WHERE U.email = $1';
-  db.query(text, [email])
-  .then(resp => {
+
+  const client = await db
+  .connect()
+  .catch(err => {
+    console.log('Unable to connect', err.stack);
+    return res.json({result: 'Unable to register.'});
+  });
+
+  try {
+    let text = 'SELECT U.id, fullname, hash FROM users U INNER JOIN login L ON U.email=L.email WHERE U.email = $1';
+    const resp = await client.query(text, [email]);
+
     if (resp.rowCount === 1) {
       // Lo username esiste
       const { hash, id, fullname } = resp.rows[0];
-      bcrypt.compare(password, hash, (err, resq) => {
-        if (resq) {
-          // La password coincide
-          return res.json({result: 'OK', id: id, name: fullname});
-        }
-        // La password non coincide
-        return error();
-      });
-    }
-    else {
-      // Lo username non esiste
+      if (bcrypt.compareSync(password, hash)) {
+        // La password coincide, aggiorno l'ultimo login
+        text = "UPDATE login SET lastlogin = $1 WHERE email = $2"
+        await client.query(text, [new Date(), email]);
+
+        return res.json({result: 'OK', id: id, name: fullname});
+      }
+      // La password non coincide
       return error();
     }
-  })
-  .catch(() => {
+  } catch (err) {
+    console.log('Error checking user', err.stack);
     return error();
-  });
+  } finally {
+    client.release();
+  }
 };
 
 module.exports = {
