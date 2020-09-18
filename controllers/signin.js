@@ -20,7 +20,9 @@ const handleSignIn = async function(req, res) {
   });
 
   try {
-    let text = 'SELECT U.id, fullname, hash FROM users U INNER JOIN login L ON U.email=L.email WHERE U.email = $1';
+    let text = `SELECT U.id, fullname, hash 
+      FROM users U INNER JOIN login L ON U.email=L.email 
+      WHERE U.email = $1`;
     const resp = await client.query(text, [email]);
 
     if (resp.rowCount === 1) {
