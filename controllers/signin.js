@@ -22,7 +22,7 @@ const handleSignIn = async function(req, res) {
   try {
     let text = `SELECT U.id, fullname, hash 
       FROM users U INNER JOIN login L ON U.email=L.email 
-      WHERE U.email = $1`;
+      WHERE U.email = $1 and U.verified=TRUE`;
     const resp = await client.query(text, [email]);
 
     if (resp.rowCount === 1) {
@@ -38,6 +38,8 @@ const handleSignIn = async function(req, res) {
       // La password non coincide
       return error();
     }
+    // L'utente non esiste o non è verificato
+    return error();
   } catch (err) {
     console.log('Error checking user', err.stack);
     return error();
