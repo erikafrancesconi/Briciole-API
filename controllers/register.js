@@ -1,10 +1,7 @@
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const db = require('../db');
-
-const emailIsValid = email => {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
+const { emailIsValid, sendConfirmationEmail } = require('../email/utils');
 
 const handleRegister = async function(req, res) {
   const { name, email, password} = req.body;
@@ -40,6 +37,11 @@ const handleRegister = async function(req, res) {
     const verificationHash = crypto.randomBytes(20).toString('hex');
     text = 'INSERT INTO user_verification (userid, hash) VALUES($1, $2)';
     await client.query(text, [uid, verificationHash]);
+
+    const mailres = await sendConfirmationEmail(name, email, verificationHash);
+    if (!mailres.success) {
+      throw new Error(`Unable to send email: ${mailres.error}`);
+    }
 
     await client.query("COMMIT");
 
