@@ -6,6 +6,12 @@ if (process.env.NODE_ENV !== 'production') {
 
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet'); // Security Middleware
+
+var corsOptions = {
+  origin: ['http://localhost:3000'],
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
 
 const { handleRegister } = require('./controllers/register');
 const { handleSignIn } = require('./controllers/signin');
@@ -13,7 +19,8 @@ const { handleSignIn } = require('./controllers/signin');
 const app = express();
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
-app.use(cors());
+app.use(cors(corsOptions));
+app.use(helmet());
 
 // Manage Users
 app.post('/register', handleRegister);
