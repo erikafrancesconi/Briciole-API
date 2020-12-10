@@ -7,6 +7,7 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet'); // Security Middleware
+const morgan = require('morgan'); // Logging functionality
 
 var corsOptions = {
   origin: ['http://localhost:3000'],
@@ -17,6 +18,7 @@ const { handleRegister } = require('./controllers/register');
 const { handleSignIn } = require('./controllers/signin');
 
 const app = express();
+app.use(morgan('combined'));
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 app.use(cors(corsOptions));
