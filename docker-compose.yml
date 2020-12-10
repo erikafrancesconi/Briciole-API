@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  api:
+    build: ./
+    command: npm start
+    working_dir: /usr/src/briciole-api
+    ports: 
+      - "3001:3001"
+    volumes: 
+      - ./:/usr/src/briciole-api
