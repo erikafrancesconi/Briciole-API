@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  api:
+  backend:
     build: ./
     command: npm start
     working_dir: /usr/src/briciole-api
@@ -9,3 +9,30 @@ services:
       - "3001:3001"
     volumes: 
       - ./:/usr/src/briciole-api
+    links: 
+      - postgres
+      - fake-smtp
+    environment: 
+      DBCONN: postgresql://postgres:postgres@postgres:5432/briciole
+      SMTP_HOST: fake-smtp
+      SMTP_PORT: 25
+      SMTP_FROM: Briciole <noreply@briciole.it>
+      APPNAME: Briciole
+
+  postgres:
+    build: ./config/pg
+    ports: 
+      - "5433:5432"
+    environment: 
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: briciole
+      POSTGRES_HOST: postgres
+
+  fake-smtp:
+    image: miladrahimi/fake-smtp
+    restart: always
+    working_dir: /output/
+    volumes:
+      - ./mails/:/output/
+    ports:
+      - 25
