@@ -1,3 +1,5 @@
+BEGIN TRANSACTION;
+
 -- DROP TABLE users;
 CREATE TABLE users (
 	id serial NOT NULL,
@@ -26,3 +28,5 @@ CREATE TABLE user_verification (
 	hash varchar(40) NOT NULL
 );
 ALTER TABLE user_verification ADD CONSTRAINT user_verification_fk FOREIGN KEY (userid) REFERENCES users(id) ON DELETE CASCADE;
+
+COMMIT;
