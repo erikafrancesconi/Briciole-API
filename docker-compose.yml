@@ -9,9 +9,6 @@ services:
       - "3001:3001"
     volumes: 
       - ./:/usr/src/briciole-api
-    links: 
-      - postgres
-      - fake-smtp
     environment: 
       DBCONN: postgresql://postgres:postgres@postgres:5432/briciole
       SMTP_HOST: fake-smtp
