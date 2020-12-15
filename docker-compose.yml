@@ -10,6 +10,7 @@ services:
     volumes: 
       - ./:/usr/src/briciole-api
     environment: 
+      PORT: 3001
       DBCONN: postgresql://postgres:postgres@postgres:5432/briciole
       SMTP_HOST: fake-smtp
       SMTP_PORT: 25
