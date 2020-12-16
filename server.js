@@ -16,6 +16,7 @@ var corsOptions = {
 
 const { handleRegister } = require('./controllers/register');
 const { handleSignIn } = require('./controllers/signin');
+const { getProfile } = require('./controllers/profile');
 
 const app = express();
 app.use(morgan('combined'));
@@ -27,6 +28,7 @@ app.use(helmet());
 // Manage Users
 app.post('/register', handleRegister);
 app.post('/signin', handleSignIn);
+app.get('/profile/:id', getProfile);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
