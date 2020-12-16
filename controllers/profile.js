@@ -18,6 +18,7 @@ const getProfile = async (req, res) => {
     if (resp.rowCount === 1) {
       return res.json(resp.rows[0]);
     }
+    return res.json({error: 'No results'});
   } catch (err) {
     return res.json({error: err});
   } finally {
@@ -26,7 +27,8 @@ const getProfile = async (req, res) => {
 }
 
 const updateProfile = async (req, res) => {
-  const { userid, name} = req.body;
+  const userid = req.params.id;
+  const { name } = req.body;
 
   const client = await db
   .connect()
@@ -49,7 +51,8 @@ const updateProfile = async (req, res) => {
 }
 
 const updatePassword = async (req, res) => {
-  const { userid2: userid, currpwd, newpwd, repeatpwd} = req.body;
+  const userid = req.params.id;
+  const { currpwd, newpwd, repeatpwd } = req.body;
 
   if (newpwd !== repeatpwd) {
     return res.json({result: 'New password and Repeat password are different.'});

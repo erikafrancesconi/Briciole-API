@@ -29,8 +29,8 @@ app.use(helmet());
 app.post('/register', handleRegister);
 app.post('/signin', handleSignIn);
 app.get('/profile/:id', getProfile);
-app.put('/profile', updateProfile);
-app.put('/changepwd', updatePassword);
+app.put('/profile/:id', updateProfile);
+app.put('/changepwd/:id', updatePassword);
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
