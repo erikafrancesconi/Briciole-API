@@ -1,5 +1,19 @@
 const bcrypt = require('bcryptjs');
 const db = require('../db');
+const jwt = require('jsonwebtoken');
+const redis = require('../redis');
+
+const generateToken = async data => {
+  const { id, email } = data;
+  try {
+    const token = jwt.sign({ email }, process.env.JWT_PASSPHRASE);
+    await redis.set(token, id);
+
+    return token;
+  } catch (err) {
+    return 'ERROR';
+  }
+}
 
 const handleSignIn = async function(req, res) {
   const error = () => {
@@ -33,7 +47,9 @@ const handleSignIn = async function(req, res) {
         text = "UPDATE login SET lastlogin = $1 WHERE email = $2"
         await client.query(text, [new Date(), email]);
 
-        return res.json({result: 'OK', id: id, name: fullname});
+        const token = await generateToken({ email, id });
+
+        return res.json({ result: 'OK', id, name: fullname, token });
       }
       // La password non coincide
       return error();
@@ -49,5 +65,5 @@ const handleSignIn = async function(req, res) {
 };
 
 module.exports = {
-  handleSignIn: handleSignIn
+  handleSignIn
 };

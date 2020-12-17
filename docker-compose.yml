@@ -16,6 +16,7 @@ services:
       SMTP_PORT: 25
       SMTP_FROM: Briciole <noreply@briciole.it>
       APPNAME: Briciole
+      REDISCONN: redis://redis:6379
 
   postgres:
     build: ./config/pg
@@ -25,6 +26,11 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: briciole
       POSTGRES_HOST: postgres
+
+  redis:
+    build: ./config/redis
+    ports:
+      - "6379:6379"
 
   fake-smtp:
     image: miladrahimi/fake-smtp
