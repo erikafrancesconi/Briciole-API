@@ -1,23 +1,27 @@
 const bcrypt = require('bcryptjs');
 const db = require('../db');
-const jwt = require('jsonwebtoken');
 const redis = require('../redis');
+const tokens = require('../utils/tokens');
 
-const generateToken = async data => {
-  const { id, email } = data;
-  try {
-    const token = jwt.sign({ email }, process.env.JWT_PASSPHRASE);
-    await redis.set(token, id);
-
-    return token;
-  } catch (err) {
-    return 'ERROR';
-  }
-}
+const { getUserName } = require('./profile');
 
 const handleSignIn = async function(req, res) {
   const error = () => {
     return res.json({result: 'Wrong Credentials.'});
+  }
+
+  const { authorization } = req.headers;
+  if (authorization) {
+    const id = await tokens.getIdFromToken(authorization);
+    if (!id || id === 'ERROR') {
+      return error();
+    }
+
+    const name = await getUserName(id);
+    if (!name) {
+      return error();
+    }
+    return res.json({ result: 'OK', id, name });
   }
 
   const { email, password } = req.body;
@@ -47,7 +51,7 @@ const handleSignIn = async function(req, res) {
         text = "UPDATE login SET lastlogin = $1 WHERE email = $2"
         await client.query(text, [new Date(), email]);
 
-        const token = await generateToken({ email, id });
+        const token = await tokens.generateToken({ email, id });
 
         return res.json({ result: 'OK', id, name: fullname, token });
       }
@@ -64,6 +68,17 @@ const handleSignIn = async function(req, res) {
   }
 };
 
+const handleSignOut = async function(req, res) {
+  const { authorization } = req.headers;
+  try {
+    if (authorization) {
+      redis.remove(authorization);
+    }
+  } catch (ignored) {}
+  return res.json({ result: 'OK'});
+}
+
 module.exports = {
-  handleSignIn
+  handleSignIn,
+  handleSignOut
 };

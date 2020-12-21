@@ -1,8 +1,56 @@
 const db = require('../db');
 const bcrypt = require('bcryptjs');
+const { getIdFromToken } = require('../utils/tokens');
+const redis = require('../redis');
+
+const getUserName = async userId => {
+  const client = await db
+  .connect()
+  .catch(err => {
+    console.log('Unable to connect', err.stack);
+    return res.json({error: 'Something went wrong.'});
+  });
+
+  try {
+    let text = `SELECT fullname FROM users WHERE users.id = $1`;
+    const resp = await client.query(text, [userId]);
+
+    if (resp.rowCount === 1) {
+      return resp.rows[0].fullname;
+    }
+    return '';
+  } catch (err) {
+    console.log('Error while retrieving data', err);
+    return '';
+  } finally {
+    client.release();
+  }
+}
+
+const checkAuth = async (token, id) => {
+  if (!token) {
+    return false;
+  }
+  
+  const tokenid = await getIdFromToken(token);
+  if (tokenid !== id) {
+    return false;
+  }
+  return true;
+}
 
 const getProfile = async (req, res) => {
   const userId = req.params.id;
+  const { authorization } = req.headers;
+
+  const error = () => {
+    return res.json({error: 'No results'});
+  }
+
+  const allowed = await checkAuth(authorization, userId);
+  if (!allowed) {
+    return error();
+  }
 
   const client = await db
   .connect()
@@ -18,7 +66,7 @@ const getProfile = async (req, res) => {
     if (resp.rowCount === 1) {
       return res.json(resp.rows[0]);
     }
-    return res.json({error: 'No results'});
+    return error();
   } catch (err) {
     return res.json({error: err});
   } finally {
@@ -29,12 +77,22 @@ const getProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
   const userid = req.params.id;
   const { name } = req.body;
+  const { authorization } = req.headers;
+
+  const error = () => {
+    return res.json({result: 'Unable to update information.'});
+  }
+
+  const allowed = await checkAuth(authorization, userid);
+  if (!allowed) {
+    return error();
+  }
 
   const client = await db
   .connect()
   .catch(err => {
     console.log('Unable to connect', err.stack);
-    return res.json({result: 'Unable to update information.'});
+    return error();
   });
 
   try {
@@ -44,7 +102,7 @@ const updateProfile = async (req, res) => {
     return res.json({result: 'OK', name: name});
   } catch (err) {
     console.error('Error in transaction', err.stack);
-    return res.json({result: 'Unable to update information.'});
+    return error();
   } finally {
     client.release();
   }
@@ -53,6 +111,16 @@ const updateProfile = async (req, res) => {
 const updatePassword = async (req, res) => {
   const userid = req.params.id;
   const { currpwd, newpwd, repeatpwd } = req.body;
+  const { authorization } = req.headers;
+
+  const error = () => {
+    return res.json({result: 'Unable to update information.'});
+  }
+
+  const allowed = await checkAuth(authorization, userid);
+  if (!allowed) {
+    return error();
+  }
 
   if (newpwd !== repeatpwd) {
     return res.json({result: 'New password and Repeat password are different.'});
@@ -62,7 +130,7 @@ const updatePassword = async (req, res) => {
   .connect()
   .catch(err => {
     console.log('Unable to connect', err.stack);
-    return res.json({result: 'Unable to update information.'});
+    return error();
   });
 
   try {
@@ -81,12 +149,13 @@ const updatePassword = async (req, res) => {
       let newhash = bcrypt.hashSync(newpwd, salt);
       text = `UPDATE login SET hash=$2 WHERE id=$1`;
       await client.query(text, [id, newhash]);
+      redis.remove(authorization);
 
       return res.json({result: 'OK'});
     }
   } catch (err) {
     console.error('Error in transaction', err.stack);
-    return res.json({result: 'Unable to update information.'});
+    return error();
   } finally {
     client.release();
   }
@@ -95,6 +164,7 @@ const updatePassword = async (req, res) => {
 
 module.exports = {
   getProfile,
+  getUserName,
   updateProfile,
   updatePassword
 };

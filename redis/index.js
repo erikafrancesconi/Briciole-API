@@ -11,6 +11,22 @@ const set = (key, value) => {
   return setAsync(key, value);
 }
 
+const getAsync = promisify(client.get).bind(client);
+const get = key => {
+  return getAsync(key);
+}
+
+const expire = (key, time) => {
+  client.expire(key, time);
+}
+
+const remove = key => {
+  client.del(key);
+}
+
 module.exports = {
-  set
+  set,
+  get,
+  remove,
+  expire
 }

@@ -15,7 +15,7 @@ var corsOptions = {
 }
 
 const { handleRegister } = require('./controllers/register');
-const { handleSignIn } = require('./controllers/signin');
+const { handleSignIn, handleSignOut } = require('./controllers/signin');
 const { getProfile, updateProfile, updatePassword } = require('./controllers/profile');
 
 const app = express();
@@ -28,6 +28,7 @@ app.use(helmet());
 // Manage Users
 app.post('/register', handleRegister);
 app.post('/signin', handleSignIn);
+app.post('/signout', handleSignOut);
 app.get('/profile/:id', getProfile);
 app.put('/profile/:id', updateProfile);
 app.put('/changepwd/:id', updatePassword);
