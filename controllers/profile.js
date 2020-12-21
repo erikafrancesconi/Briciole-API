@@ -1,6 +1,5 @@
 const db = require('../db');
 const bcrypt = require('bcryptjs');
-const { getIdFromToken } = require('../utils/tokens');
 const redis = require('../redis');
 
 const getUserName = async userId => {
@@ -27,29 +26,11 @@ const getUserName = async userId => {
   }
 }
 
-const checkAuth = async (token, id) => {
-  if (!token) {
-    return false;
-  }
-  
-  const tokenid = await getIdFromToken(token);
-  if (tokenid !== id) {
-    return false;
-  }
-  return true;
-}
-
 const getProfile = async (req, res) => {
   const userId = req.params.id;
-  const { authorization } = req.headers;
 
   const error = () => {
     return res.json({error: 'No results'});
-  }
-
-  const allowed = await checkAuth(authorization, userId);
-  if (!allowed) {
-    return error();
   }
 
   const client = await db
@@ -77,15 +58,9 @@ const getProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
   const userid = req.params.id;
   const { name } = req.body;
-  const { authorization } = req.headers;
 
   const error = () => {
     return res.json({result: 'Unable to update information.'});
-  }
-
-  const allowed = await checkAuth(authorization, userid);
-  if (!allowed) {
-    return error();
   }
 
   const client = await db
@@ -115,11 +90,6 @@ const updatePassword = async (req, res) => {
 
   const error = () => {
     return res.json({result: 'Unable to update information.'});
-  }
-
-  const allowed = await checkAuth(authorization, userid);
-  if (!allowed) {
-    return error();
   }
 
   if (newpwd !== repeatpwd) {

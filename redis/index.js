@@ -28,5 +28,6 @@ module.exports = {
   set,
   get,
   remove,
-  expire
+  expire,
+  client
 }
